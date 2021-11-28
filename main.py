@@ -1,16 +1,40 @@
-# This is a sample Python script.
+import cv2
+import matplotlib
+import seaborn as sns
+import matplotlib.pyplot as plt
+sns.set(color_codes=True)
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as fn
+# Read the image
+image = cv2.imread("C:/Users/Nestor/Pictures/Camera Roll/Nestor.jpg") #--imread() helps in loading an image into jupyter including its pixel values
+print(image.shape)
+plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
-# Press Maj+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+# Convert image to grayscale. The second argument in the following step is cv2.COLOR_BGR2GRAY, which converts colour
+# image to grayscale.
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+print("Original Image:")
+# plt.imshow(cv2.cvtColor(gray, cv2.COLOR_BGR2RGB))
+# as opencv loads in BGR format by default, we want to show it in RGB.
+# plt.show()
+gray.shape
+# flatten array of pixels
+data = np.array(gray)
+flattened = data.flatten()
+print(flattened.shape)
+# 3x3 array for edge detection
+mat_y = np.array([[-1, -2, -1],
+                  [0, 0, 0],
+                  [1, 2, 1]])
+mat_x = np.array([[-1, 0, 1],
+                  [0, 0, 0],
+                  [1, 2, 1]])
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+filtered_image = cv2.filter2D(gray, -1, mat_y)
+plt.imshow(filtered_image, cmap='gray')
+plt.show()
+filtered_image = cv2.filter2D(gray, -1, mat_x)
+plt.imshow(filtered_image, cmap='gray')
+plt.show()

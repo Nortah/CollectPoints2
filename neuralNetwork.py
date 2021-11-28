@@ -1,16 +1,15 @@
-import sys
-
-import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 import pyrealsense2 as rs
 import os
+
+
 # set max size of numpy
 # np.set_printoptions(threshold=sys.maxsize)
 
 class NeuralNetwork:
     def __init__(self, learning_rate):
-        self.weights = np.asarray(np.random.randint(0, 3000, 307200), dtype=np.float_)
+        self.weights = np.asarray(np.random.randint(0, 1, 307200), dtype=np.float_)
         self.bias = np.random.randn()
         self.learning_rate = learning_rate
 
@@ -50,6 +49,8 @@ class NeuralNetwork:
         self.weights = self.weights - (
                 derror_dweights * self.learning_rate
         )
+        print("bias ", self.bias)
+        print("weights ",self.weights)
 
     def train(self, input_vectors, targets, iterations):
         cumulative_errors = []
@@ -64,11 +65,13 @@ class NeuralNetwork:
             derror_dbias, derror_dweights = self._compute_gradients(
                 input_vector, target
             )
+            print("Error ", derror_dbias, " ", derror_dweights)
 
             self._update_parameters(derror_dbias, derror_dweights)
-
+            print("current iteration ", current_iteration)
             # Measure the cumulative error for all the instances
             if current_iteration % 100 == 0:
+                print("enter loop")
                 cumulative_error = 0
                 # Loop through all the instances to measure the error
                 for data_instance_index in range(len(input_vectors)):
@@ -76,6 +79,7 @@ class NeuralNetwork:
                     target = targets[data_instance_index]
 
                     prediction = self.predict(data_point)
+                    print("Prediction : ", prediction)
                     error = np.square(prediction - target)
 
                     cumulative_error = cumulative_error + error
@@ -121,6 +125,7 @@ class ReadBag:
 
                     array = np.asanyarray(depth_frame.get_data())
                     array = array.flatten()
+                    array = array/1000
                     self.training_array = np.vstack((self.training_array, array))
 
                 finally:
@@ -152,15 +157,12 @@ right_data_rows, colums = input_vectors_temp.shape
 for x in range(right_data_rows):
     targets = np.append(targets, int(1))
 
-
 print("Start concat ")
 # Merge the two training vectors
 input_vectors = np.concatenate((input_vectors, input_vectors_temp), axis=0)
 print("End concat ")
 print(input_vectors.shape)
 print(targets)
-
-targets = [0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0]
 
 learning_rate = 0.1
 
@@ -180,5 +182,3 @@ plt.savefig("cumulative_error.png")
 
 print("false array result: ", neural_network.predict(input_vector_false))
 print("right array result: ", neural_network.predict(input_vector_right))
-
-
