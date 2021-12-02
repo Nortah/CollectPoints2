@@ -7,13 +7,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Import data
-train_images = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/2dTraining/')
-train_images = train_images.get_data()
-test_images = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/2dTest/')
-test_images = test_images.get_data()
+train_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/2dTraining/')
+train_images = train_data.get_data()
+test_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/2dTest/')
+test_images = test_data.get_data()
 
-train_labels = np.asarray([0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-test_labels = np.asarray([0, 0, 1, 1, 1, 1])
+# class names dictionary
+class_names = np.array(train_data.label_values)
+class_names = np.unique(class_names)
+
+
+
+# Get labels
+train_labels = np.array([], dtype='int')
+for item in train_data.label_values:
+    train_labels = np.append(train_labels, np.where(class_names == item))
+
+test_labels = np.array([], dtype='int')
+for item in test_data.label_values:
+    test_labels = np.append(test_labels, np.where(class_names == item))
+
 print(train_images.shape)
 print(train_labels)
 print(test_images.shape)
@@ -24,8 +37,6 @@ print(test_labels)
 # train_labels
 # (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
 
-# class names dictionary
-class_names = ['NotNestor', 'Nestor']
 
 # normalize images between 0 and 1
 train_images = train_images / 255.0
@@ -111,17 +122,17 @@ for i in range(num_images):
 plt.tight_layout()
 plt.show()
 # ----------------------- Prediction for 1 item ----------------------/
-# Grab an image from the test dataset.
-img = test_images[4]
-
-# Add the image to a batch where it's the only member.
-img = (np.expand_dims(img, 0))
-
-predictions_single = probability_model.predict(img)
-
-print(predictions_single)
-
-plot_value_array(1, predictions_single[0], test_labels)
-_ = plt.xticks(range(class_names.__len__()), class_names, rotation=45)
-plt.show()
+# # Grab an image from the test dataset.
+# img = test_images[4]
+#
+# # Add the image to a batch where it's the only member.
+# img = (np.expand_dims(img, 0))
+#
+# predictions_single = probability_model.predict(img)
+#
+# print(predictions_single)
+#
+# plot_value_array(1, predictions_single[0], test_labels)
+# _ = plt.xticks(range(class_names.__len__()), class_names, rotation=45)
+# plt.show()
 # ----------------------- Prediction for 1 item ----------------------/
