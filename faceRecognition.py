@@ -1,43 +1,43 @@
 import cv2
 
-# Get user supplied values
-import numpy as np
-import sys
+import dlib
 
+# Load the detector
+detector = dlib.get_frontal_face_detector()
 
-imagePath = "C:/Users/Nestor/Documents/Travail de Bachelor/2dTraining/Nestor13.jpg"
-cascPath = "haarcascade_frontalface_default.xml"
+# Load the predictor
+predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 
-# Create the haar cascade
-faceCascade = cv2.CascadeClassifier(cascPath)
+# read the image
+img = cv2.imread("C:/Users/Nestor/Documents/Travail de Bachelor/2dTraining/Nestor;13.jpg")
 
-# Read the image
-image = cv2.imread(imagePath)
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# Convert image into grayscale
+gray = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2GRAY)
 
+# Use detector to find landmarks
+faces = detector(gray)
 
-# cv2.imshow("Faces found", image)
-# Detect faces in the image
-faces = faceCascade.detectMultiScale(
-    gray,
-    scaleFactor=1.1,
-    minNeighbors=5,
-    minSize=(30, 30)
-)
+for face in faces:
+    x1 = face.left() # left point
+    y1 = face.top() # top point
+    x2 = face.right() # right point
+    y2 = face.bottom() # bottom point
 
-print("Found {0} faces!".format(len(faces)))
+    # Look for the landmarks
+    landmarks = predictor(image=gray, box=face)
+    x = landmarks.part(27).x
+    y = landmarks.part(27).y
 
-# Draw a rectangle around the faces
-for (x, y, w, h) in faces:
-    cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
-    print(x)
-    print(x+w)
-    print(y)
-    print(y+h)
+    # Draw a circle
+    cv2.circle(img=img, center=(x, y), radius=5, color=(0, 255, 0), thickness=-1)
 
-#new image without alpha channel...
-new_img = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
-cv2.imshow("Faces found", image)
-cv2.waitKey(0)
+# show the image
+cv2.imshow(winname="Face", mat=img)
+
+# Wait for a key press to exit
+cv2.waitKey(delay=0)
+
+# Close all windows
+cv2.destroyAllWindows()
 
 

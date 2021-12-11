@@ -1,10 +1,14 @@
 # TensorFlow and tf.keras
 import tensorflow as tf
+from tensorflow.python.data import AUTOTUNE
+
 import DataCollect as dc
 
 # Helper libraries
 import numpy as np
 import matplotlib.pyplot as plt
+img_height = 480
+img_width = 640
 
 # Import data
 train_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/2dTraining/')
@@ -16,7 +20,8 @@ test_images = test_data.get_data()
 class_names = np.array(train_data.label_values)
 class_names = np.unique(class_names)
 
-
+# save class names
+np.savetxt('./labels.csv', class_names, fmt='%s')
 
 # Get labels
 train_labels = np.array([], dtype='int')
@@ -39,18 +44,41 @@ print(test_labels)
 
 
 # normalize images between 0 and 1
-train_images = train_images / 255.0
+# train_images = train_images / 255.0
 print(train_images.shape)
 print(train_labels)
-test_images = test_images / 255.0
+# test_images = test_images / 255.0
 print(test_images.shape)
 print(test_labels)
+# model for data augmentation
+data_augmentation = tf.keras.Sequential(
+  [
+    tf.keras.layers.RandomFlip("horizontal",
+                      input_shape=(img_height,
+                                  img_width,
+                                  3)),
+    tf.keras.layers.RandomRotation(0.1),
+    tf.keras.layers.RandomZoom(0.1),
+  ]
+)
+# create randomly altered images
+
+# for images, _ in train_images.take(1):
+#   for i in range(9):
+#     augmented_images = data_augmentation(images)
 
 # create model
 model = tf.keras.Sequential([
-    # flatten the input of the 2d array into 1d
-    tf.keras.layers.Flatten(input_shape=(480, 640)),
-    tf.keras.layers.Dense(128, activation='relu'),
+    # data_augmentation,
+    tf.keras.layers.Rescaling(1./255, input_shape=(img_height, img_width, 3)),
+    tf.keras.layers.MaxPooling2D(),
+    tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
+    tf.keras.layers.MaxPooling2D(),
+    tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
+    tf.keras.layers.MaxPooling2D(),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(256, activation='relu'),
     tf.keras.layers.Dense(class_names.__len__())
 ])
 
@@ -58,10 +86,13 @@ model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
-model.fit(train_images, train_labels, epochs=20)
+model.fit(train_images, train_labels, validation_data=(test_images, test_labels),  epochs=10)
 
 test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
 model.summary()
+# Save Model
+
+model.save('./my_model')
 print('\nTest accuracy:', test_acc)
 
 # Create a probability array
@@ -110,8 +141,8 @@ def plot_value_array(i, predictions_array, true_label):
 
 # Plot the first X test images, their predicted labels, and the true labels.
 # Color correct predictions in blue and incorrect predictions in red.
-num_rows = 3
-num_cols = 2
+num_rows = 1
+num_cols = 7
 num_images = num_rows * num_cols
 plt.figure(figsize=(2 * 2 * num_cols, 2 * num_rows))
 for i in range(num_images):
@@ -131,7 +162,7 @@ plt.show()
 # predictions_single = probability_model.predict(img)
 #
 # print(predictions_single)
-#
+# #
 # plot_value_array(1, predictions_single[0], test_labels)
 # _ = plt.xticks(range(class_names.__len__()), class_names, rotation=45)
 # plt.show()
