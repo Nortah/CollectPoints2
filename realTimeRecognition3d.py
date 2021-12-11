@@ -9,11 +9,11 @@ import tensorflow as tf
 # ============================= Get model for prediction =======================================/
 # get labels
 labels = []
-with open("labels.csv") as f:
+with open("labels3d.csv") as f:
     reader = csv.reader(f)
     for row in reader:  # each row is a list
         labels.append(row)
-model = tf.keras.models.load_model('./my_model')
+model = tf.keras.models.load_model('./model3d')
 probability_model = tf.keras.Sequential([model,
                                          tf.keras.layers.Softmax()])
 # ============================= Get model for prediction =======================================/
@@ -23,7 +23,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 fontScale = 1
 
 color = (0, 255, 0)  # (B, G, R)
-thickness = 1
+thickness = 3
 lineType = cv2.LINE_AA
 bottomLeftOrigin = False
 
@@ -77,7 +77,7 @@ try:
         facesCount = treated_image.get_faces_count()
         # if there's a face try to detect if it correspond to someone
         if facesCount > 0:
-            image = (np.expand_dims(color_image, 0))
+            image = (np.expand_dims(depth_image, 0))
             prob = probability_model.predict(image)
             index = prob.argmax(axis=-1)
             person = labels[index[0]]

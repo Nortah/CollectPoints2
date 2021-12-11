@@ -6,11 +6,14 @@ import pyrealsense2 as rs
 import pretreatment as pr
 
 class DataCollect:
-    def __init__(self, folder_path):
+    def __init__(self, folder_path, type):
         self.folder_path = folder_path
         # size of the array is 480*640 as it's the resolution
-        self.array = np.empty((0, 480, 640, 3), int)
+        self.colorArray = np.empty((0, 480, 640, 3), int)
+        self.depthArray = np.empty((0, 480, 640), int)
         self.label_values = []
+        # the type define if the output value is  'C' for color array 'D' for depth array or 'CD' for both
+        self.type = type
 
     def get_data(self):
         files = os.listdir(self.folder_path)
@@ -21,15 +24,15 @@ class DataCollect:
                 try:
                     image = cv2.imread(self.folder_path + f)
                     # détecte le visage et eface l'arrière plan
-                    # treat_image = pr.Pretreatment(image)
-                    # image = treat_image.get_roi()
+                    treat_image = pr.Pretreatment(image)
+                    image = treat_image.get_roi()
 
                     # image = cv2.imread(self.folder_path + f)
-                    print(image.shape)
                     # Convert image to grayscale. The second argument in the following step is cv2.COLOR_BGR2GRAY, which converts colour
                     # image to grayscale.
-                    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                    self.array = np.concatenate((self.array, [image]))
+                    # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                    self.colorArray = np.concatenate((self.colorArray, [image]))
+
                 finally:
                     pass
             elif f.endswith(".bag"):
@@ -57,28 +60,38 @@ class DataCollect:
                     # Get color frames
                     color_frame = frames.get_color_frame()
                     # Get depth frame
-                    depth_frame = np.asanyarray(frames.get_depth_frame())
+                    depth_frame = frames.get_depth_frame()
                     colors = np.asanyarray(color_frame.get_data())
                     treat_image = pr.Pretreatment(colors)
                     image = treat_image.get_roi()
-                    for i in range(image.shape[0]):
-                        for j in range(image.shape[1]):
-                            if image[i][j][0] == 255 and image[i][j][1] == 255 and image[i][j][2] == 255:
-                                depth_frame[i][j] = 0
 
-                    array = np.asanyarray(depth_frame.get_data())
-                    print(array.shape)
-                    self.array = np.concatenate((self.array, [array]))
+                    depth = np.asanyarray(depth_frame.get_data())
+                    if self.type != 'C':
+                        for i in range(image.shape[0]):
+                            for j in range(image.shape[1]):
+                                if image[i][j][0] == 255 and image[i][j][1] == 255 and image[i][j][2] == 255:
+                                    depth[i][j] = 0
+                    self.depthArray = np.concatenate((self.depthArray, [depth]))
+
+                    self.colorArray = np.concatenate((self.colorArray, [image]))
 
 
 
                 finally:
                     pass
+        if self.type == 'D':
+            return self.depthArray
+        elif self.type == 'C':
+            return self.colorArray
+        elif self.type == 'CD':
+            return self.depthArray
+        else:
+            print('ERROR: Type ' + type + ' does not exist')
+            return self.depthArray
 
-        return self.array
 
 
-# train_images = DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/2dTest/')
+# train_images = DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/3dTest/', 'C')
 # # Get labels
 # train_labels = np.array([])
 #

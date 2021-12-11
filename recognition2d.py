@@ -11,9 +11,9 @@ img_height = 480
 img_width = 640
 
 # Import data
-train_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/2dTraining/')
+train_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/2dTraining/', 'C')
 train_images = train_data.get_data()
-test_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/2dTest/')
+test_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/2dTest/', 'C')
 test_images = test_data.get_data()
 
 # class names dictionary
@@ -86,7 +86,7 @@ model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
-model.fit(train_images, train_labels, validation_data=(test_images, test_labels),  epochs=10)
+model.fit(train_images, train_labels, validation_data=(test_images, test_labels),  epochs=15)
 
 test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
 model.summary()
@@ -141,8 +141,8 @@ def plot_value_array(i, predictions_array, true_label):
 
 # Plot the first X test images, their predicted labels, and the true labels.
 # Color correct predictions in blue and incorrect predictions in red.
-num_rows = 1
-num_cols = 7
+num_rows = 7
+num_cols = 1
 num_images = num_rows * num_cols
 plt.figure(figsize=(2 * 2 * num_cols, 2 * num_rows))
 for i in range(num_images):

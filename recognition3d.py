@@ -7,14 +7,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Import data
-train_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/3dTraining/')
+train_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/3dTraining/', 'D')
 train_images = train_data.get_data()
-test_data  = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/3dTest/')
+test_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/3dTest/', 'D')
 test_images = test_data.get_data()
 
 # class names dictionary
 class_names = np.array(train_data.label_values)
 class_names = np.unique(class_names)
+
+# save class names
+np.savetxt('./labels3d.csv', class_names, fmt='%s')
 
 # Get labels
 train_labels = np.array([], dtype='int')
@@ -24,6 +27,7 @@ for item in train_data.label_values:
 test_labels = np.array([], dtype='int')
 for item in test_data.label_values:
     test_labels = np.append(test_labels, np.where(class_names == item))
+
 
 print(train_images.shape)
 print(train_labels)
@@ -60,6 +64,8 @@ model.compile(optimizer='adam',
 model.fit(train_images, train_labels, epochs=20)
 
 test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
+
+model.save('./model3d')
 print('\nTest accuracy:', test_acc)
 
 # Create a probability array
