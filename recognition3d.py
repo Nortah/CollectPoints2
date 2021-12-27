@@ -5,7 +5,8 @@ import DataCollect as dc
 # Helper libraries
 import numpy as np
 import matplotlib.pyplot as plt
-
+img_height = 480
+img_width = 640
 # Import data
 train_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/3dTraining/', 'D')
 train_images = train_data.get_data()
@@ -42,18 +43,25 @@ print(test_labels)
 # class names dictionary
 
 # normalize images between 0 and 1
-train_images = train_images / 3000.0
+# train_images = train_images / 3000.0
 print(train_images.shape)
 print(train_labels)
-test_images = test_images / 3000.0
+# test_images = test_images / 3000.0
 print(test_images.shape)
 print(test_labels)
 
 # create model
 model = tf.keras.Sequential([
-    # flatten the input of the 2d array into 1d
-    tf.keras.layers.Flatten(input_shape=(480, 640)),
-    tf.keras.layers.Dense(128, activation='relu'),
+    # data_augmentation,
+    tf.keras.layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
+    tf.keras.layers.MaxPooling2D(),
+    tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
+    tf.keras.layers.MaxPooling2D(),
+    tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
+    tf.keras.layers.MaxPooling2D(),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(256, activation='relu'),
     tf.keras.layers.Dense(class_names.__len__())
 ])
 
@@ -61,7 +69,7 @@ model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
-model.fit(train_images, train_labels, epochs=20)
+model.fit(train_images, train_labels, validation_data=(test_images, test_labels), epochs=10)
 
 test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
 
@@ -114,8 +122,8 @@ def plot_value_array(i, predictions_array, true_label):
 
 # Plot the first X test images, their predicted labels, and the true labels.
 # Color correct predictions in blue and incorrect predictions in red.
-num_rows = 3
-num_cols = 3
+num_rows = 4
+num_cols = 4
 num_images = num_rows * num_cols
 plt.figure(figsize=(2 * 2 * num_cols, 2 * num_rows))
 for i in range(num_images):

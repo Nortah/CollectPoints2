@@ -7,13 +7,14 @@ import DataCollect as dc
 # Helper libraries
 import numpy as np
 import matplotlib.pyplot as plt
+
 img_height = 480
 img_width = 640
 
 # Import data
-train_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/2dTraining/', 'C')
+train_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/3dTraining/', 'C')
 train_images = train_data.get_data()
-test_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/2dTest/', 'C')
+test_data = dc.DataCollect('C:/Users/Nestor/Documents/Travail de Bachelor/3dTest/', 'C')
 test_images = test_data.get_data()
 
 # class names dictionary
@@ -52,25 +53,21 @@ print(test_images.shape)
 print(test_labels)
 # model for data augmentation
 data_augmentation = tf.keras.Sequential(
-  [
-    tf.keras.layers.RandomFlip("horizontal",
-                      input_shape=(img_height,
-                                  img_width,
-                                  3)),
-    tf.keras.layers.RandomRotation(0.1),
-    tf.keras.layers.RandomZoom(0.1),
-  ]
+    [
+        tf.keras.layers.RandomFlip("horizontal",
+                                   input_shape=(img_height,
+                                                img_width,
+                                                3)),
+        tf.keras.layers.RandomRotation(0.1),
+        tf.keras.layers.RandomZoom(0.1),
+    ]
 )
-# create randomly altered images
 
-# for images, _ in train_images.take(1):
-#   for i in range(9):
-#     augmented_images = data_augmentation(images)
 
 # create model
 model = tf.keras.Sequential([
     # data_augmentation,
-    tf.keras.layers.Rescaling(1./255, input_shape=(img_height, img_width, 3)),
+    tf.keras.layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
     tf.keras.layers.MaxPooling2D(),
     tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
     tf.keras.layers.MaxPooling2D(),
@@ -86,7 +83,7 @@ model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
-model.fit(train_images, train_labels, validation_data=(test_images, test_labels),  epochs=15)
+model.fit(train_images, train_labels, validation_data=(test_images, test_labels), epochs=15)
 
 test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
 model.summary()
@@ -141,8 +138,8 @@ def plot_value_array(i, predictions_array, true_label):
 
 # Plot the first X test images, their predicted labels, and the true labels.
 # Color correct predictions in blue and incorrect predictions in red.
-num_rows = 7
-num_cols = 1
+num_rows = 2
+num_cols = 3
 num_images = num_rows * num_cols
 plt.figure(figsize=(2 * 2 * num_cols, 2 * num_rows))
 for i in range(num_images):

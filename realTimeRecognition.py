@@ -23,7 +23,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 fontScale = 1
 
 color = (0, 255, 0)  # (B, G, R)
-thickness = 1
+thickness = 2
 lineType = cv2.LINE_AA
 bottomLeftOrigin = False
 
@@ -73,17 +73,22 @@ try:
         color_colormap_dim = color_image.shape
 
         # transform into image
-        treated_image = pr.Pretreatment(color_image)
-        facesCount = treated_image.get_faces_count()
+        treated_image = pr.Pretreatment()
+        facesCount = treated_image.get_faces_count(color_image)
+        image = treated_image.get_roi(color_image)
         # if there's a face try to detect if it correspond to someone
         if facesCount > 0:
-            image = (np.expand_dims(color_image, 0))
-            prob = probability_model.predict(image)
+            img = (np.expand_dims(image, 0))
+            prob = probability_model.predict(img)
             index = prob.argmax(axis=-1)
             person = labels[index[0]]
-            print(person)
-            color_image = cv2.putText(color_image, str(person), org, font, fontScale, color,
-                                      thickness, lineType, bottomLeftOrigin)
+            print(prob)
+            if np.amax(prob) > 0.9:
+                color_image = cv2.putText(image, str(person), org, font, fontScale, color,
+                                          thickness, lineType, bottomLeftOrigin)
+            else:
+                color_image = cv2.putText(color_image, 'Not recognized', org, font, fontScale, color,
+                                          thickness, lineType, bottomLeftOrigin)
 
         # If depth and color resolutions are different, resize color image to match depth image for display
         if depth_colormap_dim != color_colormap_dim:
